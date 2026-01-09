@@ -1,105 +1,217 @@
-import c2qa
+"""
+Bosonic Quantum Approximate Optimization Algorithm (QAOA).
+
+This module implements QAOA using continuous variable (bosonic) modes
+for optimization problems. The cost Hamiltonian targets position eigenstates
+and uses a kinetic mixer based on momentum.
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
-from qiskit import QuantumRegister, ClassicalRegister
-from qiskit.circuit.library import RGate
-from qiskit.converters import circuit_to_gate
-from qutip import *
-from qiskit.circuit import Parameter
+import c2qa
+from qiskit import ClassicalRegister
 from qiskit.circuit.library import UnitaryGate
+from qutip import position, momentum, qeye, expect, Qobj
 from scipy.stats.contingency import margins
-from scipy.optimize import minimize
-from qiskit.quantum_info import state_fidelity, Statevector
 
-def cost(cutoff, a,n, eta):
-    x = position(cutoff)  # Position operator
-    aI = a * qeye(cutoff)  
-    Hc = (x - aI) ** n   # Cost Hamiltonian
-    costH = (-1j * eta * Hc).expm()  # Unitary evolution
-    return costH
 
-def kinetic_mixer(cutoff, gamma):
-    p = momentum(cutoff)  # Momentum operator
-    Hm = 0.5*(p ** 2)  # Mixer Hamiltonian
-    mixerH = (-1j * gamma * Hm).expm()  # Unitary evolution
-    return mixerH
+def cost(cutoff: int, a: float, n: int, eta: float) -> Qobj:
+    """
+    Cost Hamiltonian unitary for CV-QAOA.
 
-def cvQAOA(params,cutoff,depth,s,n,a,costval,estval):
-    gamma_list = params[:depth]  
-    eta_list = params[depth:]    
+    Implements U_c = exp(-i * eta * (x - a*I)^n) which encodes the
+    optimization objective of finding x = a.
 
-    # Define Qumode and Classical Registers
-    qmr = c2qa.QumodeRegister(1, num_qubits_per_qumode=int(np.ceil(np.log2(cutoff))))
-    cr = ClassicalRegister(1)
+    Args:
+        cutoff: Fock space cutoff dimension.
+        a: Target position value.
+        n: Power of the cost function (typically 2 for quadratic).
+        eta: Evolution time / strength parameter.
 
-    # Initialize the circuit
-    circuit = c2qa.CVCircuit(qmr, cr)
-    circuit.cv_initialize(0, qmr[0])
-    circuit.cv_sq(-s, qmr[0])  
-
-    for i in range(depth):
-        gamma = gamma_list[i]
-        eta = eta_list[i]
-
-        costH = cost(cutoff, a,n, eta)
-        gate1 = UnitaryGate(costH.full(), label=f'Uc_{eta}')
-        circuit.append(gate1, qmr[0])
-        
-        mixH = kinetic_mixer(cutoff, gamma)
-        gate1 = UnitaryGate(mixH.full(), label=f'Um_{gamma}')
-        circuit.append(gate1, qmr[0])
-
-    # Simulate the circuit
+    Returns:
+        QuTiP unitary operator for the cost evolution.
+    """
     x = position(cutoff)
-    # st0 = Statevector.from_instruction(circuit) 
-    state, _, _ = c2qa.util.simulate(circuit)
+    aI = a * qeye(cutoff)
+    Hc = (x - aI) ** n
+    return (-1j * eta * Hc).expm()
 
-    expval = (expect(x, Qobj(state)))
 
-    # Compute the cost function value
-    cost_val = (expval - a) ** n 
+def kinetic_mixer(cutoff: int, gamma: float) -> Qobj:
+    """
+    Kinetic mixer Hamiltonian unitary for CV-QAOA.
 
-    # Append to costval for tracking
-    estval.append(expval)
-    costval.append(cost_val)
-    return (cost_val)
+    Implements U_m = exp(-i * gamma * p^2 / 2) which provides
+    the mixing dynamics in momentum space.
 
-def results_final(params, cutoff,depth,s,n,a):
-    gamma_list = params[:depth] 
-    eta_list = params[depth:]  
+    Args:
+        cutoff: Fock space cutoff dimension.
+        gamma: Evolution time / mixing strength.
 
-    # Define Qumode and Classical Registers
-    qmr = c2qa.QumodeRegister(1, num_qubits_per_qumode=int(np.ceil(np.log2(cutoff))))
+    Returns:
+        QuTiP unitary operator for the mixer evolution.
+    """
+    p = momentum(cutoff)
+    Hm = 0.5 * (p ** 2)
+    return (-1j * gamma * Hm).expm()
+
+
+def cvQAOA(params: np.ndarray, cutoff: int, depth: int,
+           s: float, n: int, a: float,
+           costval: list, estval: list) -> float:
+    """
+    Execute CV-QAOA circuit and compute cost function.
+
+    Args:
+        params: Parameter array [gamma_0, ..., gamma_{p-1}, eta_0, ..., eta_{p-1}].
+        cutoff: Fock space cutoff dimension.
+        depth: Number of QAOA layers (p).
+        s: Initial squeezing parameter.
+        n: Power of the cost function.
+        a: Target position value.
+        costval: List to append cost values (modified in-place).
+        estval: List to append position expectation values (modified in-place).
+
+    Returns:
+        Cost function value (E[x] - a)^n.
+    """
+    gamma_list = params[:depth]
+    eta_list = params[depth:]
+
+    # Initialize circuit
+    qmr = c2qa.QumodeRegister(
+        num_qumodes=1,
+        num_qubits_per_qumode=int(np.ceil(np.log2(cutoff)))
+    )
     cr = ClassicalRegister(1)
-
-    # Initialize the circuit
     circuit = c2qa.CVCircuit(qmr, cr)
-    circuit.cv_initialize(0, qmr[0])   # Initialize qumode to vacuum state
-    circuit.cv_sq(-s, qmr[0])         
 
-    # QAOA loop
+    # Initialize to squeezed vacuum
+    circuit.cv_initialize(0, qmr[0])
+    circuit.cv_sq(-s, qmr[0])
+
+    # QAOA layers
     for i in range(depth):
-        # Cost Hamiltonian gate
-        costH = cost(cutoff, a,n, eta_list[i])
-        cost_gate = UnitaryGate(costH.full(), label=f'Uc_{eta_list[i]}')
+        # Cost unitary
+        cost_unitary = cost(cutoff, a, n, eta_list[i])
+        cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
         circuit.append(cost_gate, qmr[0])
 
-        # Mixer Hamiltonian gate
-        mixH = kinetic_mixer(cutoff, gamma_list[i])
-        mixer_gate = UnitaryGate(mixH.full(), label=f'Um_{gamma_list[i]}')
+        # Mixer unitary
+        mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
+        mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
         circuit.append(mixer_gate, qmr[0])
 
+    # Simulate and compute expectation value
     state, _, _ = c2qa.util.simulate(circuit)
-
     x = position(cutoff)
     expval = expect(x, Qobj(state))
 
+    # Cost function
+    cost_value = (expval - a) ** n
+
+    # Track progress
+    estval.append(expval)
+    costval.append(cost_value)
+
+    return cost_value
+
+
+def results_final(params: np.ndarray, cutoff: int, depth: int,
+                  s: float, n: int, a: float) -> tuple:
+    """
+    Execute final CV-QAOA circuit and compute Wigner distribution.
+
+    Args:
+        params: Optimized parameter array.
+        cutoff: Fock space cutoff dimension.
+        depth: Number of QAOA layers.
+        s: Initial squeezing parameter.
+        n: Power of the cost function.
+        a: Target position value.
+
+    Returns:
+        Tuple of (position_expectation, position_distribution, position_axis).
+    """
+    gamma_list = params[:depth]
+    eta_list = params[depth:]
+
+    # Initialize circuit
+    qmr = c2qa.QumodeRegister(
+        num_qumodes=1,
+        num_qubits_per_qumode=int(np.ceil(np.log2(cutoff)))
+    )
+    cr = ClassicalRegister(1)
+    circuit = c2qa.CVCircuit(qmr, cr)
+
+    # Initialize to squeezed vacuum
+    circuit.cv_initialize(0, qmr[0])
+    circuit.cv_sq(-s, qmr[0])
+
+    # QAOA layers
+    for i in range(depth):
+        cost_unitary = cost(cutoff, a, n, eta_list[i])
+        cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
+        circuit.append(cost_gate, qmr[0])
+
+        mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
+        mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
+        circuit.append(mixer_gate, qmr[0])
+
+    # Simulate
+    state, _, _ = c2qa.util.simulate(circuit)
+
+    # Position expectation
+    x = position(cutoff)
+    expval = expect(x, Qobj(state))
+
+    # Wigner function marginal for position distribution
     ax_min, ax_max, steps = -6, 6, 200
     w = c2qa.wigner.wigner(state, axes_max=ax_max, axes_min=ax_min, axes_steps=steps)
-    x_dist, _ = margins(w.T) 
+    x_dist, _ = margins(w.T)
 
-    # Normalize the x-axis distribution
+    # Normalize
     x_dist *= (ax_max - ax_min) / steps
     xaxis = np.linspace(ax_min, ax_max, steps)
 
     return expval, x_dist, xaxis
+
+
+def build_qaoa_circuit(params: np.ndarray, cutoff: int, depth: int,
+                       s: float, n: int, a: float) -> c2qa.CVCircuit:
+    """
+    Build a CV-QAOA circuit with given parameters.
+
+    Args:
+        params: Parameter array [gamma_0, ..., gamma_{p-1}, eta_0, ..., eta_{p-1}].
+        cutoff: Fock space cutoff dimension.
+        depth: Number of QAOA layers.
+        s: Initial squeezing parameter.
+        n: Power of the cost function.
+        a: Target position value.
+
+    Returns:
+        The constructed CVCircuit.
+    """
+    gamma_list = params[:depth]
+    eta_list = params[depth:]
+
+    qmr = c2qa.QumodeRegister(
+        num_qumodes=1,
+        num_qubits_per_qumode=int(np.ceil(np.log2(cutoff)))
+    )
+    cr = ClassicalRegister(1)
+    circuit = c2qa.CVCircuit(qmr, cr)
+
+    circuit.cv_initialize(0, qmr[0])
+    circuit.cv_sq(-s, qmr[0])
+
+    for i in range(depth):
+        cost_unitary = cost(cutoff, a, n, eta_list[i])
+        cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
+        circuit.append(cost_gate, qmr[0])
+
+        mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
+        mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
+        circuit.append(mixer_gate, qmr[0])
+
+    return circuit
