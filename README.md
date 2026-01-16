@@ -5,11 +5,11 @@ Built using Bosonic Qiskit (https://github.com/C2QA/bosonic-qiskit) and QuTip
 
 ## Install
 
-Use a Python virtual environment to install compatible version of QisKit.
+Use a Python virtual environment to install a compatible version of QisKit.
 
 ## Bosonic Qiskit Benchmarks
 In benchmarks/demo_benchmarks.ipynb
 
 ## Custom Gates
-Implements the custom gates and hellper functions for the benchmarks
+Implements the custom gates and helper functions for the benchmarks
 
