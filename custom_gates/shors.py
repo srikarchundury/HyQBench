@@ -199,7 +199,7 @@ def extractLSB(cutoff: int, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+        qargs=qumode_register[qumode_idx] + qubit_register[:],
     )
 
     circuit.h(qubit_register[0])
@@ -239,7 +239,7 @@ def extractLSB_dag(cutoff: int, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+        qargs=qumode_register[qumode_idx] + qubit_register[:],
     )
 
     circuit.h(qubit_register[0])
@@ -284,16 +284,16 @@ def control_multiplication(cutoff: int, alpha: float, circuit: c2qa.CVCircuit,
         The modified circuit.
     """
     rotation_plus = rotation_control(cutoff, 1)
-    gate1 = UnitaryGate(rotation_plus.full(), label='cR1')
+    # gate1 = UnitaryGate(rotation_plus.full(), label='cR1')
 
     rotation_minus = rotation_control(cutoff, -1)
-    gate2 = UnitaryGate(rotation_minus.full(), label='cR2')
+    # gate2 = UnitaryGate(rotation_minus.full(), label='cR2')
 
     circuit = multiplication(cutoff, np.sqrt(alpha), circuit, qumode_register, qumode_idx)
     # circuit.append(gate2, qumode_register[qumode_idx] + qubit_register[:])
     circuit.append(
         circuit._new_gate(
-            gate2.full(),
+            rotation_minus.full(),
             [], # empty params
             label='cR2',
             cutoffs=[cutoff],
@@ -301,7 +301,7 @@ def control_multiplication(cutoff: int, alpha: float, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+        qargs=qumode_register[qumode_idx] + qubit_register[:],
     )
 
     circuit = multiplication(cutoff, 1 / np.sqrt(alpha), circuit, qumode_register, qumode_idx)
@@ -309,15 +309,15 @@ def control_multiplication(cutoff: int, alpha: float, circuit: c2qa.CVCircuit,
     # circuit.append(gate1, qumode_register[qumode_idx] + qubit_register[:])
     circuit.append(
         circuit._new_gate(
-            gate1.full(),
+            rotation_plus.full(),
             [], # empty params
             label='cR1',
             cutoffs=[cutoff],
-            num_qubits=len(qubit_register),
+            num_qubits=len(qumode_register[qumode_idx]) + len(qubit_register),
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+        qargs=qumode_register[qumode_idx] + qubit_register[:],
     )
 
     return circuit
@@ -366,7 +366,7 @@ def V_alpha(cutoff: int, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[0]] + qubit_register[:],
+        qargs=qumode_register[0] + qubit_register[:],
     )
 
     # Controlled multiplication by alpha on qumode[1]
@@ -386,7 +386,7 @@ def V_alpha(cutoff: int, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[2]] + qubit_register[:],
+        qargs=qumode_register[2] + qubit_register[:],
     )
 
     # Extract LSB from qumode[2]
@@ -431,7 +431,7 @@ def V_alpha_dag(cutoff: int, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[2]] + qubit_register[:],
+        qargs=qumode_register[2] + qubit_register[:],
     )
 
     circuit = control_multiplication(cutoff, 1 / alpha, circuit, qumode_register, qubit_register, 1)
@@ -449,7 +449,7 @@ def V_alpha_dag(cutoff: int, circuit: c2qa.CVCircuit,
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[0]] + qubit_register[:],
+        qargs=qumode_register[0] + qubit_register[:],
     )
 
     circuit = extractLSB_dag(cutoff, circuit, qumode_register, qubit_register, 0)
@@ -559,11 +559,11 @@ def U_aNm(cutoff: int, circuit: c2qa.CVCircuit,
             [], # empty params
             label='Q+1',
             cutoffs=[cutoff],
-            num_qubits=len(qumode_register[0]),
+            num_qubits=len(qumode_register[1]),
             duration=None,
             unit=None,
         ),
-        qargs=[qumode_register[1]],
+        qargs=qumode_register[1],
     )
 
     circuit.barrier()

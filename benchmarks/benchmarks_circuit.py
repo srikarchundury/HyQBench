@@ -263,7 +263,7 @@ def state_transfer_DVtoCV(cutoff: int, circuit: c2qa.CVCircuit,
                 [], # empty params
                 label=f'W{j}',
                 cutoffs=[cutoff],
-                num_qubits=len(qmr) + len(qbr),
+                num_qubits=len(qmr[j]) + len(qbr),
                 duration=None,
                 unit=None,
             ),
@@ -279,11 +279,11 @@ def state_transfer_DVtoCV(cutoff: int, circuit: c2qa.CVCircuit,
                 [], # empty params
                 label=f'V{j}',
                 cutoffs=[cutoff],
-                num_qubits=len(qmr) + len(qbr),
+                num_qubits=len(qmr[j]) + len(qbr),
                 duration=None,
                 unit=None,
             ),
-            qargs=qmr[:] + qbr[:],
+            qargs=qmr[j] + qbr[:],
         )
 
     if measure:
