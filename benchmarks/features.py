@@ -9,7 +9,8 @@ for continuous-variable discrete-variable (CV-DV) hybrid quantum systems.
 import numpy as np
 from collections import Counter
 
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from qiskit.quantum_info import partial_trace
 from qutip import num
 

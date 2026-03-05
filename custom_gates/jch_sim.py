@@ -6,7 +6,8 @@ model, which describes coupled cavity-qubit systems with photon hopping.
 """
 
 import numpy as np
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from qiskit import QuantumRegister
 from qiskit.converters import circuit_to_gate
 from qutip import identity, sigmax, sigmay, tensor, destroy, create, Qobj

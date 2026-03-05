@@ -19,7 +19,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..'))
 sys.path.insert(0, PARENT_DIR)
 
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from custom_gates import state_transfer, jch_sim, bosonic_vqe, shors, bosonic_qaoa
 
 
@@ -179,12 +180,40 @@ def state_transfer_CVtoDV(cutoff: int, circuit: c2qa.CVCircuit,
     """
     for j in range(1, n + 1):
         V_j = state_transfer.Vj(lmbda, j, n, cutoff)
-        gate = UnitaryGate(V_j.full(), label=f'V{j}')
-        circuit.append(gate, qmr[:] + qbr[:])
+        # gate = UnitaryGate(V_j.full(), label=f'V{j}')
+        # circuit.append(gate, qmr[:] + qbr[:])
+        # printing meta of V_j above.
+        # print(f"V{j} meta: num_qubits={len(qmr[j]) + len(qbr)}, cutoffs={[cutoff]}, unitary_shape={V_j.shape}")
+        # for below, print num_qubits and cutoffs to confirm they match V_j's meta.
+        # print(f"Appending V{j} with num_qubits={len(qmr[j]) + len(qbr)}, cutoffs={[cutoff]}")
+        circuit.append(
+            circuit._new_gate(
+                V_j.full(),
+                [], # empty params
+                label=f'V{j}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[j]) + len(qbr),
+                duration=None,
+                unit=None,
+            ),
+            qargs=qmr[j] + qbr[:],
+        )
 
         W_j = state_transfer.Wj(lmbda, j, n, cutoff)
-        gate = UnitaryGate(W_j.full(), label=f'W{j}')
-        circuit.append(gate, qmr[:] + qbr[:])
+        # gate = UnitaryGate(W_j.full(), label=f'W{j}')
+        # circuit.append(gate, qmr[:] + qbr[:])
+        circuit.append(
+            circuit._new_gate(
+                W_j.full(),
+                [], # empty params
+                label=f'W{j}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[j]) + len(qbr),
+                duration=None,
+                unit=None,
+            ),
+            qargs=qmr[j] + qbr[:],
+        )
 
     if apply_basis:
         apply_basis_transformation(circuit, qbr)
@@ -226,12 +255,36 @@ def state_transfer_DVtoCV(cutoff: int, circuit: c2qa.CVCircuit,
 
     for j in range(n, 0, -1):
         W_j = state_transfer.Wj(lmbda, j, n, cutoff)
-        gate = UnitaryGate(W_j.full(), label=f'W{j}')
-        circuit.append(gate, qmr[:] + qbr[:])
+        # gate = UnitaryGate(W_j.full(), label=f'W{j}')
+        # circuit.append(gate, qmr[:] + qbr[:])
+        circuit.append(
+            circuit._new_gate(
+                W_j.full(),
+                [], # empty params
+                label=f'W{j}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr) + len(qbr),
+                duration=None,
+                unit=None,
+            ),
+            qargs=qmr[j] + qbr[:],
+        )
 
         V_j = state_transfer.Vj(lmbda, j, n, cutoff)
-        gate = UnitaryGate(V_j.full(), label=f'V{j}')
-        circuit.append(gate, qmr[:] + qbr[:])
+        # gate = UnitaryGate(V_j.full(), label=f'V{j}')
+        # circuit.append(gate, qmr[:] + qbr[:])
+        circuit.append(
+            circuit._new_gate(
+                V_j.full(),
+                [], # empty params
+                label=f'V{j}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr) + len(qbr),
+                duration=None,
+                unit=None,
+            ),
+            qargs=qmr[:] + qbr[:],
+        )
 
     if measure:
         for i in range(n):

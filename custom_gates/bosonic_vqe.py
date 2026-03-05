@@ -8,7 +8,8 @@ Displacement (ECD) ansatz for hybrid qubit-qumode systems.
 import numpy as np
 import qutip as qt
 import qiskit
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from qiskit import QuantumRegister
 from qiskit.circuit.library import UnitaryGate
 from functools import partial
@@ -61,17 +62,65 @@ def ecd_rot_op(beta: np.ndarray, theta: np.ndarray, phi: np.ndarray,
     E2 = ecd_op(beta[1], theta[1], phi[1], 1, nfocks)
 
     # Append gates to circuit
-    r1_gate = UnitaryGate(R1.full(), label='R1')
-    circuit.append(r1_gate, qbr[:])
+    # r1_gate = UnitaryGate(R1.full(), label='R1')
+    # circuit.append(r1_gate, qbr[:])
+    circuit.append(
+        circuit._new_gate(
+            R1.full(),
+            [], # empty params
+            label='R1',
+            cutoffs=[2], # qubit gate
+            num_qubits=len(qbr),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[*qbr[:]],
+    )
 
-    e1_gate = UnitaryGate(E1.full(), label='ECD1')
-    circuit.append(e1_gate, qmr1[:] + qmr[:] + qbr[:])
+    # e1_gate = UnitaryGate(E1.full(), label='ECD1')
+    # circuit.append(e1_gate, qmr1[:] + qmr[:] + qbr[:])
+    circuit.append(
+        circuit._new_gate(
+            E1.full(),
+            [], # empty params
+            label='ECD1',
+            cutoffs=nfocks + [2], # qumode + qubit
+            num_qubits=len(qmr1) + len(qmr) + len(qbr),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[*qmr1[:], *qmr[:], *qbr[:]],
+    )
 
-    r2_gate = UnitaryGate(R2.full(), label='R2')
-    circuit.append(r2_gate, qbr[:])
+    # r2_gate = UnitaryGate(R2.full(), label='R2')
+    # circuit.append(r2_gate, qbr[:])
+    circuit.append(
+        circuit._new_gate(
+            R2.full(),
+            [], # empty params
+            label='R2',
+            cutoffs=[2], # qubit gate
+            num_qubits=len(qbr),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[*qbr[:]],
+    )
 
-    e2_gate = UnitaryGate(E2.full(), label='ECD2')
-    circuit.append(e2_gate, qmr1[:] + qmr[:] + qbr[:])
+    # e2_gate = UnitaryGate(E2.full(), label='ECD2')
+    # circuit.append(e2_gate, qmr1[:] + qmr[:] + qbr[:])
+    circuit.append(
+        circuit._new_gate(
+            E2.full(),
+            [], # empty params
+            label='ECD2',
+            cutoffs=nfocks + [2], # qumode + qubit
+            num_qubits=len(qmr1) + len(qmr) + len(qbr),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[*qmr1[:], *qmr[:], *qbr[:]],
+    )
 
     return circuit
 

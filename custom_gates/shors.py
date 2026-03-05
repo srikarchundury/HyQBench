@@ -7,7 +7,8 @@ in continuous variable modes and performs modular exponentiation.
 """
 
 import numpy as np
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from qiskit.circuit.library import UnitaryGate
 from qiskit.quantum_info import partial_trace
 from qutip import qeye, position, momentum, num, Qobj, tensor
@@ -184,10 +185,23 @@ def extractLSB(cutoff: int, circuit: c2qa.CVCircuit,
         The modified circuit.
     """
     qumode_gate = tensor(qproj00(), qeye(cutoff)) + tensor(qproj11(), (1j * np.pi * position(cutoff)).expm())
-    gate = UnitaryGate(qumode_gate.full(), label='LSB')
-
     circuit.h(qubit_register[0])
-    circuit.append(gate, qumode_register[qumode_idx] + qubit_register[:])
+
+    # gate = UnitaryGate(qumode_gate.full(), label='LSB')
+    # circuit.append(gate, qumode_register[qumode_idx] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            qumode_gate.full(),
+            [], # empty params
+            label='LSB',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[qumode_idx]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+    )
+
     circuit.h(qubit_register[0])
 
     return circuit
@@ -210,10 +224,24 @@ def extractLSB_dag(cutoff: int, circuit: c2qa.CVCircuit,
         The modified circuit.
     """
     qumode_gate = tensor(qproj00(), qeye(cutoff)) + tensor(qproj11(), (-1j * np.pi * position(cutoff)).expm())
-    gate = UnitaryGate(qumode_gate.full(), label='LSB_dag')
 
     circuit.h(qubit_register[0])
-    circuit.append(gate, qumode_register[qumode_idx] + qubit_register[:])
+
+    # gate = UnitaryGate(qumode_gate.full(), label='LSB_dag')
+    # circuit.append(gate, qumode_register[qumode_idx] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            qumode_gate.full(),
+            [], # empty params
+            label='LSB_dag',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[qumode_idx]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+    )
+
     circuit.h(qubit_register[0])
 
     return circuit
@@ -262,9 +290,35 @@ def control_multiplication(cutoff: int, alpha: float, circuit: c2qa.CVCircuit,
     gate2 = UnitaryGate(rotation_minus.full(), label='cR2')
 
     circuit = multiplication(cutoff, np.sqrt(alpha), circuit, qumode_register, qumode_idx)
-    circuit.append(gate2, qumode_register[qumode_idx] + qubit_register[:])
+    # circuit.append(gate2, qumode_register[qumode_idx] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            gate2.full(),
+            [], # empty params
+            label='cR2',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[qumode_idx]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+    )
+
     circuit = multiplication(cutoff, 1 / np.sqrt(alpha), circuit, qumode_register, qumode_idx)
-    circuit.append(gate1, qumode_register[qumode_idx] + qubit_register[:])
+
+    # circuit.append(gate1, qumode_register[qumode_idx] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            gate1.full(),
+            [], # empty params
+            label='cR1',
+            cutoffs=[cutoff],
+            num_qubits=len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[qumode_idx]] + qubit_register[:],
+    )
 
     return circuit
 
@@ -300,16 +354,40 @@ def V_alpha(cutoff: int, circuit: c2qa.CVCircuit,
 
     # Controlled subtraction on qumode[0]
     control_subtraction = Q_control_minus1(cutoff)
-    gate = UnitaryGate(control_subtraction.full(), label='Q-1')
-    circuit.append(gate, qumode_register[0] + qubit_register[:])
+    # gate = UnitaryGate(control_subtraction.full(), label='Q-1')
+    # circuit.append(gate, qumode_register[0] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            control_subtraction.full(),
+            [], # empty params
+            label='Q-1',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[0]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[0]] + qubit_register[:],
+    )
 
     # Controlled multiplication by alpha on qumode[1]
     circuit = control_multiplication(cutoff, alpha, circuit, qumode_register, qubit_register, 1)
 
     # Controlled addition on qumode[2]
     control_addition = Q_control_plus1(cutoff)
-    gate = UnitaryGate(control_addition.full(), label='Q+1')
-    circuit.append(gate, qumode_register[2] + qubit_register[:])
+    # gate = UnitaryGate(control_addition.full(), label='Q+1')
+    # circuit.append(gate, qumode_register[2] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            control_addition.full(),
+            [], # empty params
+            label='Q+1',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[2]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[2]] + qubit_register[:],
+    )
 
     # Extract LSB from qumode[2]
     circuit = extractLSB(cutoff, circuit, qumode_register, qubit_register, 2)
@@ -341,14 +419,38 @@ def V_alpha_dag(cutoff: int, circuit: c2qa.CVCircuit,
     circuit = extractLSB_dag(cutoff, circuit, qumode_register, qubit_register, 2)
 
     control_subtraction = Q_control_minus1(cutoff)
-    gate = UnitaryGate(control_subtraction.full(), label='Q-1')
-    circuit.append(gate, qumode_register[2] + qubit_register[:])
+    # gate = UnitaryGate(control_subtraction.full(), label='Q-1')
+    # circuit.append(gate, qumode_register[2] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            control_subtraction.full(),
+            [], # empty params
+            label='Q-1',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[2]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[2]] + qubit_register[:],
+    )
 
     circuit = control_multiplication(cutoff, 1 / alpha, circuit, qumode_register, qubit_register, 1)
 
     control_addition = Q_control_plus1(cutoff)
-    gate = UnitaryGate(control_addition.full(), label='Q+1')
-    circuit.append(gate, qumode_register[0] + qubit_register[:])
+    # gate = UnitaryGate(control_addition.full(), label='Q+1')
+    # circuit.append(gate, qumode_register[0] + qubit_register[:])
+    circuit.append(
+        circuit._new_gate(
+            control_addition.full(),
+            [], # empty params
+            label='Q+1',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[0]) + len(qubit_register),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[0]] + qubit_register[:],
+    )
 
     circuit = extractLSB_dag(cutoff, circuit, qumode_register, qubit_register, 0)
 
@@ -449,8 +551,21 @@ def U_aNm(cutoff: int, circuit: c2qa.CVCircuit,
     circuit.barrier()
 
     Q_addition = Q_displacement_plus1(cutoff)
-    gate = UnitaryGate(Q_addition.full(), label='Q+1')
-    circuit.append(gate, qumode_register[1])
+    # gate = UnitaryGate(Q_addition.full(), label='Q+1')
+    # circuit.append(gate, qumode_register[1])
+    circuit.append(
+        circuit._new_gate(
+            Q_addition.full(),
+            [], # empty params
+            label='Q+1',
+            cutoffs=[cutoff],
+            num_qubits=len(qumode_register[0]),
+            duration=None,
+            unit=None,
+        ),
+        qargs=[qumode_register[1]],
+    )
+
     circuit.barrier()
 
     circuit = V_aNm(cutoff, circuit, qumode_register, qubit_register, a, N, m)

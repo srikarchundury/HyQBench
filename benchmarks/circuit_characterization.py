@@ -13,7 +13,8 @@ from matplotlib.patches import Circle
 
 from qiskit import QuantumRegister, ClassicalRegister
 
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from custom_gates import bosonic_vqe
 
 from .benchmarks_circuit import (

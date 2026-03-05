@@ -7,7 +7,8 @@ and uses a kinetic mixer based on momentum.
 """
 
 import numpy as np
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from qiskit import ClassicalRegister
 from qiskit.circuit.library import UnitaryGate
 from qutip import position, momentum, qeye, expect, Qobj
@@ -93,13 +94,37 @@ def cvQAOA(params: np.ndarray, cutoff: int, depth: int,
     for i in range(depth):
         # Cost unitary
         cost_unitary = cost(cutoff, a, n, eta_list[i])
-        cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
-        circuit.append(cost_gate, qmr[0])
+        # cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
+        # circuit.append(cost_gate, qmr[0])
+        circuit.append(
+            circuit._new_gate(
+                cost_unitary.full(),
+                [], # empty params
+                label=f'Uc_{i}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[0]),
+                duration=None,
+                unit=None,
+            ),
+            qargs=[*qmr[0]],
+        )
 
         # Mixer unitary
         mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
-        mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
-        circuit.append(mixer_gate, qmr[0])
+        # mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
+        # circuit.append(mixer_gate, qmr[0])
+        circuit.append(
+            circuit._new_gate(
+                mixer_unitary.full(),
+                [], # empty params
+                label=f'Um_{i}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[0]),
+                duration=None,
+                unit=None,
+            ),
+            qargs=[*qmr[0]],
+        )
 
     # Simulate and compute expectation value
     state, _, _ = c2qa.util.simulate(circuit)
@@ -150,12 +175,36 @@ def results_final(params: np.ndarray, cutoff: int, depth: int,
     # QAOA layers
     for i in range(depth):
         cost_unitary = cost(cutoff, a, n, eta_list[i])
-        cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
-        circuit.append(cost_gate, qmr[0])
+        # cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
+        # circuit.append(cost_gate, qmr[0])
+        circuit.append(
+            circuit._new_gate(
+                cost_unitary.full(),
+                [], # empty params
+                label=f'Uc_{i}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[0]),
+                duration=None,
+                unit=None,
+            ),
+            qargs=[*qmr[0]],
+        )
 
         mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
-        mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
-        circuit.append(mixer_gate, qmr[0])
+        # mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
+        # circuit.append(mixer_gate, qmr[0])
+        circuit.append(
+            circuit._new_gate(
+                mixer_unitary.full(),
+                [], # empty params
+                label=f'Um_{i}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[0]),
+                duration=None,
+                unit=None,
+            ),
+            qargs=[*qmr[0]],
+        )
 
     # Simulate
     state, _, _ = c2qa.util.simulate(circuit)
@@ -207,11 +256,35 @@ def build_qaoa_circuit(params: np.ndarray, cutoff: int, depth: int,
 
     for i in range(depth):
         cost_unitary = cost(cutoff, a, n, eta_list[i])
-        cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
-        circuit.append(cost_gate, qmr[0])
+        # cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
+        # circuit.append(cost_gate, qmr[0])
+        circuit.append(
+            circuit._new_gate(
+                cost_unitary.full(),
+                [], # empty params
+                label=f'Uc_{i}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[0]),
+                duration=None,
+                unit=None,
+            ),
+            qargs=[*qmr[0]],
+        )
 
         mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
-        mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
-        circuit.append(mixer_gate, qmr[0])
+        # mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
+        # circuit.append(mixer_gate, qmr[0])
+        circuit.append(
+            circuit._new_gate(
+                mixer_unitary.full(),
+                [], # empty params
+                label=f'Um_{i}',
+                cutoffs=[cutoff],
+                num_qubits=len(qmr[0]),
+                duration=None,
+                unit=None,
+            ),
+            qargs=[*qmr[0]],
+        )
 
     return circuit

@@ -25,16 +25,12 @@ dependencies = [
     "numpy>=2.0.2,<=2.2.2",
 ]
 
-[project.urls]
-Homepage = "https://github.com/C2QA/bosonic-qiskit"
-Issues = "https://github.com/C2QA/bosonic-qiskit/issues"
-
 [build-system]
 requires = ["setuptools == 75.8.0", "setuptools-git-versioning"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["c2qa"]
+packages = ["bosonic_qiskit"]
 
 [tool.setuptools-git-versioning]
 enabled = true

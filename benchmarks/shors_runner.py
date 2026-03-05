@@ -16,7 +16,8 @@ from math import gcd
 from qiskit import QuantumRegister, ClassicalRegister
 from qutip import destroy, squeeze, displace, basis
 
-import c2qa
+# import c2qa
+import bosonic_qiskit as c2qa
 from custom_gates import shors
 from .benchmarks_circuit import shors_circuit
 
