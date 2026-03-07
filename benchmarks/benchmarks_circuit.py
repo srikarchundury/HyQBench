@@ -186,33 +186,21 @@ def state_transfer_CVtoDV(cutoff: int, circuit: c2qa.CVCircuit,
         # print(f"V{j} meta: num_qubits={len(qmr[j]) + len(qbr)}, cutoffs={[cutoff]}, unitary_shape={V_j.shape}")
         # for below, print num_qubits and cutoffs to confirm they match V_j's meta.
         # print(f"Appending V{j} with num_qubits={len(qmr[j]) + len(qbr)}, cutoffs={[cutoff]}")
-        circuit.append(
-            circuit._new_gate(
-                V_j.full(),
-                [], # empty params
-                label=f'V{j}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[j]) + len(qbr),
-                duration=None,
-                unit=None,
-            ),
-            qargs=qmr[j] + qbr[:],
+        circuit.cv_gate_from_matrix(
+            V_j.full(),
+            qumodes=qmr[:],
+            qubits=qbr[:],
+            label=f"V{j}",
         )
 
         W_j = state_transfer.Wj(lmbda, j, n, cutoff)
         # gate = UnitaryGate(W_j.full(), label=f'W{j}')
         # circuit.append(gate, qmr[:] + qbr[:])
-        circuit.append(
-            circuit._new_gate(
-                W_j.full(),
-                [], # empty params
-                label=f'W{j}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[j]) + len(qbr),
-                duration=None,
-                unit=None,
-            ),
-            qargs=qmr[j] + qbr[:],
+        circuit.cv_gate_from_matrix(
+            W_j.full(),
+            qumodes=qmr[:],
+            qubits=qbr[:],
+            label=f"W{j}",
         )
 
     if apply_basis:
@@ -257,33 +245,21 @@ def state_transfer_DVtoCV(cutoff: int, circuit: c2qa.CVCircuit,
         W_j = state_transfer.Wj(lmbda, j, n, cutoff)
         # gate = UnitaryGate(W_j.full(), label=f'W{j}')
         # circuit.append(gate, qmr[:] + qbr[:])
-        circuit.append(
-            circuit._new_gate(
-                W_j.full(),
-                [], # empty params
-                label=f'W{j}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[j]) + len(qbr),
-                duration=None,
-                unit=None,
-            ),
-            qargs=qmr[j] + qbr[:],
+        circuit.cv_gate_from_matrix(
+            W_j.full(),
+            qumodes=qmr[:],
+            qubits=qbr[:],
+            label=f'W{j}',
         )
 
         V_j = state_transfer.Vj(lmbda, j, n, cutoff)
         # gate = UnitaryGate(V_j.full(), label=f'V{j}')
         # circuit.append(gate, qmr[:] + qbr[:])
-        circuit.append(
-            circuit._new_gate(
-                V_j.full(),
-                [], # empty params
-                label=f'V{j}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[j]) + len(qbr),
-                duration=None,
-                unit=None,
-            ),
-            qargs=qmr[j] + qbr[:],
+        circuit.cv_gate_from_matrix(
+            V_j.full(),
+            qumodes=qmr[:],
+            qubits=qbr[:],
+            label=f'V{j}',
         )
 
     if measure:

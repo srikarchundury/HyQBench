@@ -370,17 +370,11 @@ def energy_val(Xvec, ndepth, nfocks, H):
     # print(Ugate.full().shape)
     # ecd1 = UnitaryGate(Ugate.full(), label=f'ECD')
     # circuit.append(ecd1, qmr1[:] + qmr[:] + qbr[:])
-    circuit.append(
-        circuit._new_gate(
-            Ugate.full(),
-            [], # empty params
-            label='ECD',
-            cutoffs=nfocks,
-            num_qubits=len(qmr1) + len(qmr) + len(qbr),
-            duration=None,
-            unit=None,
-        ),
-        qargs=qmr1[:] + qmr[:] + qbr[:],
+    circuit.cv_gate_from_matrix(
+        Ugate.full(),
+        qumodes=qmr1[:] + qmr[:],
+        qubits=qbr[:],
+        label=f"ECD",
     )
 
     state, result, _ = c2qa.util.simulate(circuit)
@@ -681,17 +675,11 @@ def num_prob_basis(Xvec, nvec, ndepth, nfocks):
     # print(Ugate.full().shape)
     # ecd1 = UnitaryGate(Ugate.full(), label=f'ECD')
     # circuit.append(ecd1, qmr1[:] + qmr[:] + qbr[:])
-    circuit.append(
-        circuit._new_gate(
-            Ugate.full(),
-            [], # empty params
-            label='ECD',
-            cutoffs=nfocks,
-            num_qubits=len(qmr1) + len(qmr) + len(qbr),
-            duration=None,
-            unit=None,
-        ),
-        qargs=qmr1[:] + qmr[:] + qbr[:],
+    circuit.cv_gate_from_matrix(
+        Ugate.full(),
+        qumodes=qmr1[:] + qmr[:],
+        qubits=qbr[:],
+        label=f"ECD",
     )
 
     psi, result, _ = c2qa.util.simulate(circuit)

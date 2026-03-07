@@ -149,7 +149,13 @@ def average_over_timesteps(circuit_template: c2qa.CVCircuit, U1,
     circuit = circuit_template.copy()
 
     for i, t in enumerate(np.arange(0, steps * dt, dt)):
-        circuit.append(U1, qmr[:] + qbr[:])
+        # circuit.append(U1, qmr[:] + qbr[:])
+        circuit.cv_gate_from_matrix(
+            U1.full(),
+            qumodes=qmr[:],
+            qubits=qbr[:],
+            label=f"U1_t{t:.2f}",
+        )
         if i % sample_every == 0:
             state, _, _ = c2qa.util.simulate(circuit)
             trunc, wneg, energy = evaluate_quantum_metrics(

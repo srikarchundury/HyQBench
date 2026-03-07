@@ -64,62 +64,38 @@ def ecd_rot_op(beta: np.ndarray, theta: np.ndarray, phi: np.ndarray,
     # Append gates to circuit
     # r1_gate = UnitaryGate(R1.full(), label='R1')
     # circuit.append(r1_gate, qbr[:])
-    circuit.append(
-        circuit._new_gate(
-            R1.full(),
-            [], # empty params
-            label='R1',
-            cutoffs=[2], # qubit gate
-            num_qubits=len(qbr),
-            duration=None,
-            unit=None,
-        ),
-        qargs=[*qbr[:]],
+    circuit.cv_gate_from_matrix(
+        R1.full(),
+        qumodes=[], # no qumodes for this gate
+        qubits=[qbr[0]], # single qubit gate
+        label='R1',
     )
 
     # e1_gate = UnitaryGate(E1.full(), label='ECD1')
     # circuit.append(e1_gate, qmr1[:] + qmr[:] + qbr[:])
-    circuit.append(
-        circuit._new_gate(
-            E1.full(),
-            [], # empty params
-            label='ECD1',
-            cutoffs=nfocks + [2], # qumode + qubit
-            num_qubits=len(qmr1) + len(qmr) + len(qbr),
-            duration=None,
-            unit=None,
-        ),
-        qargs=[*qmr1[:], *qmr[:], *qbr[:]],
+    circuit.cv_gate_from_matrix(
+        E1.full(),
+        qumodes=[*qmr1[:], *qmr[:]], # all qumodes
+        qubits=[qbr[0]], # single qubit
+        label='ECD1',
     )
 
     # r2_gate = UnitaryGate(R2.full(), label='R2')
     # circuit.append(r2_gate, qbr[:])
-    circuit.append(
-        circuit._new_gate(
-            R2.full(),
-            [], # empty params
-            label='R2',
-            cutoffs=[2], # qubit gate
-            num_qubits=len(qbr),
-            duration=None,
-            unit=None,
-        ),
-        qargs=[*qbr[:]],
+    circuit.cv_gate_from_matrix(
+        R2.full(),
+        qumodes=[], # no qumodes for this gate
+        qubits=[qbr[0]], # single qubit gate
+        label='R2',
     )
 
     # e2_gate = UnitaryGate(E2.full(), label='ECD2')
     # circuit.append(e2_gate, qmr1[:] + qmr[:] + qbr[:])
-    circuit.append(
-        circuit._new_gate(
-            E2.full(),
-            [], # empty params
-            label='ECD2',
-            cutoffs=nfocks + [2], # qumode + qubit
-            num_qubits=len(qmr1) + len(qmr) + len(qbr),
-            duration=None,
-            unit=None,
-        ),
-        qargs=[*qmr1[:], *qmr[:], *qbr[:]],
+    circuit.cv_gate_from_matrix(
+        E2.full(),
+        qumodes=[*qmr1[:], *qmr[:]], # all qumodes
+        qubits=[qbr[0]], # single qubit
+        label='ECD2',
     )
 
     return circuit

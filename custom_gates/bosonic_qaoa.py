@@ -96,34 +96,22 @@ def cvQAOA(params: np.ndarray, cutoff: int, depth: int,
         cost_unitary = cost(cutoff, a, n, eta_list[i])
         # cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
         # circuit.append(cost_gate, qmr[0])
-        circuit.append(
-            circuit._new_gate(
-                cost_unitary.full(),
-                [], # empty params
-                label=f'Uc_{i}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[0]),
-                duration=None,
-                unit=None,
-            ),
-            qargs=[*qmr[0]],
+        circuit.cv_gate_from_matrix(
+            cost_unitary.full(),
+            qumodes=[qmr[0]],
+            qubits=[],
+            label=f"Uc_{i}",
         )
 
         # Mixer unitary
         mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
         # mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
         # circuit.append(mixer_gate, qmr[0])
-        circuit.append(
-            circuit._new_gate(
-                mixer_unitary.full(),
-                [], # empty params
-                label=f'Um_{i}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[0]),
-                duration=None,
-                unit=None,
-            ),
-            qargs=[*qmr[0]],
+        circuit.cv_gate_from_matrix(
+            mixer_unitary.full(),
+            qumodes=[qmr[0]],
+            qubits=[],
+            label=f"Um_{i}",
         )
 
     # Simulate and compute expectation value
@@ -177,33 +165,21 @@ def results_final(params: np.ndarray, cutoff: int, depth: int,
         cost_unitary = cost(cutoff, a, n, eta_list[i])
         # cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
         # circuit.append(cost_gate, qmr[0])
-        circuit.append(
-            circuit._new_gate(
-                cost_unitary.full(),
-                [], # empty params
-                label=f'Uc_{i}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[0]),
-                duration=None,
-                unit=None,
-            ),
-            qargs=[*qmr[0]],
+        circuit.cv_gate_from_matrix(
+            cost_unitary.full(),
+            qumodes=[qmr[0]],
+            qubits=[],
+            label=f"Uc_{i}",
         )
 
         mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
         # mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
         # circuit.append(mixer_gate, qmr[0])
-        circuit.append(
-            circuit._new_gate(
-                mixer_unitary.full(),
-                [], # empty params
-                label=f'Um_{i}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[0]),
-                duration=None,
-                unit=None,
-            ),
-            qargs=[*qmr[0]],
+        circuit.cv_gate_from_matrix(
+            mixer_unitary.full(),
+            qumodes=[qmr[0]],
+            qubits=[],
+            label=f"Um_{i}",
         )
 
     # Simulate
@@ -258,33 +234,21 @@ def build_qaoa_circuit(params: np.ndarray, cutoff: int, depth: int,
         cost_unitary = cost(cutoff, a, n, eta_list[i])
         # cost_gate = UnitaryGate(cost_unitary.full(), label=f'Uc_{i}')
         # circuit.append(cost_gate, qmr[0])
-        circuit.append(
-            circuit._new_gate(
-                cost_unitary.full(),
-                [], # empty params
-                label=f'Uc_{i}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[0]),
-                duration=None,
-                unit=None,
-            ),
-            qargs=[*qmr[0]],
+        circuit.cv_gate_from_matrix(
+            cost_unitary.full(),
+            qumodes=[qmr[0]],
+            qubits=[],
+            label=f"Uc_{i}",
         )
 
         mixer_unitary = kinetic_mixer(cutoff, gamma_list[i])
         # mixer_gate = UnitaryGate(mixer_unitary.full(), label=f'Um_{i}')
         # circuit.append(mixer_gate, qmr[0])
-        circuit.append(
-            circuit._new_gate(
-                mixer_unitary.full(),
-                [], # empty params
-                label=f'Um_{i}',
-                cutoffs=[cutoff],
-                num_qubits=len(qmr[0]),
-                duration=None,
-                unit=None,
-            ),
-            qargs=[*qmr[0]],
+        circuit.cv_gate_from_matrix(
+            mixer_unitary.full(),
+            qumodes=[qmr[0]],
+            qubits=[],
+            label=f"Um_{i}",
         )
 
     return circuit
