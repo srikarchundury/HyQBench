@@ -507,7 +507,7 @@ def shors_circuit(N: int, m: int, R: int, a: int,
 # =============================================================================
 
 def qft_circuit(cutoff: int, delta: float, n: int, a: int,
-                append: int) -> c2qa.CVCircuit:
+                append: int, measure: bool) -> c2qa.CVCircuit:
     """
     Build Quantum Fourier Transform circuit using CV-DV hybrid.
 
@@ -517,7 +517,7 @@ def qft_circuit(cutoff: int, delta: float, n: int, a: int,
         n: Number of main qubits.
         a: Number of ancilla qubits.
         append: Number of append qubits.
-
+        measure: Whether to measure the qubits.
     Returns:
         CVCircuit for QFT.
     """
@@ -551,7 +551,7 @@ def qft_circuit(cutoff: int, delta: float, n: int, a: int,
 
     # DV to CV transfer (without basis transformation or measurement)
     state_transfer_DVtoCV(cutoff, circuit, qmr, total_reg, creg, total,
-                          apply_basis=False, measure=False)
+                          apply_basis=False, measure=measure)
 
     # QFT operations in CV space
     delta_prime = (2 * np.pi) / (2**total * delta)
@@ -561,7 +561,7 @@ def qft_circuit(cutoff: int, delta: float, n: int, a: int,
 
     # CV to DV transfer (without basis transformation or measurement)
     state_transfer_CVtoDV(cutoff, circuit, qmr, total_reg, creg, total,
-                          apply_basis=False, measure=False)
+                          apply_basis=False, measure=measure)
 
     # Reverse basis preparation
     for q in reversed_reg[:-1]:
@@ -571,10 +571,11 @@ def qft_circuit(cutoff: int, delta: float, n: int, a: int,
     circuit.z(reversed_reg[0])
     circuit.z(reversed_reg[-1])
 
-    # Measure main qubits
-    start_index = a
-    for i in range(n):
-        circuit.measure(total_reg[start_index + i], creg[i])
+    if measure:
+        # Measure main qubits
+        start_index = a
+        for i in range(n):
+            circuit.measure(total_reg[start_index + i], creg[i])
 
     return circuit
 
