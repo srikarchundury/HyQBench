@@ -203,7 +203,7 @@ def energy_val(Xvec: np.ndarray, ndepth: int, nfocks: list, H: qt.Qobj) -> float
     )
 
     # Simulate
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
 
     # Compute expectation value
     ham = qt.Qobj(H.full())
@@ -307,7 +307,7 @@ def num_prob_basis(Xvec: np.ndarray, nvec: np.ndarray,
         nfocks, circuit, qmr, qmr1, qbr
     )
 
-    psi, _, _ = c2qa.util.simulate(circuit)
+    psi, _, _, _, _ = c2qa.util.simulate(circuit)
 
     # Construct basis state |q, n, m>
     basis_state = qt.tensor(

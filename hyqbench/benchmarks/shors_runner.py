@@ -198,7 +198,7 @@ def estimate_success_probability(N: int, m: int, R: int, delta: float,
         circuit = shors_circuit(N, m, R, a, delta, cutoff)
 
         # Run simulation to get momentum distribution
-        stateop, _, _ = c2qa.util.simulate(circuit, shots=1)
+        stateop, _, _, _ = c2qa.util.simulate(circuit, shots=1)
         rho_qumode_0 = shors.get_reduced_qumode_density_matrix(
             stateop, qumode_index=0, num_qumodes=3, cutoff=cutoff
         )

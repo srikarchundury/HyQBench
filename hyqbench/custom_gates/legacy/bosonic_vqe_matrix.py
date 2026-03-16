@@ -377,7 +377,7 @@ def energy_val(Xvec, ndepth, nfocks, H):
         label=f"ECD",
     )
 
-    state, result, _ = c2qa.util.simulate(circuit)
+    state, result, _, _ = c2qa.util.simulate(circuit)
 
 
     # Expectation value
@@ -682,7 +682,7 @@ def num_prob_basis(Xvec, nvec, ndepth, nfocks):
         label=f"ECD",
     )
 
-    psi, result, _ = c2qa.util.simulate(circuit)
+    psi, result, _, _ = c2qa.util.simulate(circuit)
 
     # |q, n, m >
     state = qt.tensor(qt.basis(2, nvec[0]),

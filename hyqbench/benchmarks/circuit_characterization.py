@@ -157,7 +157,7 @@ def average_over_timesteps(circuit_template: c2qa.CVCircuit, U1,
             label=f"U1_t{t:.2f}",
         )
         if i % sample_every == 0:
-            state, _, _ = c2qa.util.simulate(circuit)
+            state, _, _, _ = c2qa.util.simulate(circuit)
             trunc, wneg, energy = evaluate_quantum_metrics(
                 circuit, state, cutoff, num_qumodes, num_qubits
             )
@@ -217,7 +217,7 @@ def main():
     cr = ClassicalRegister(4)
     circuit = c2qa.CVCircuit(qmr, qbr, cr)
     circuit = state_transfer_CVtoDV(cutoff, circuit, qmr, qbr, cr, 4)
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
     metrics = characterize_circuit("StateTransferCVtoDV", circuit, cutoff, 4, 1, state)
     struct_all["StateTransferCVtoDV"] = {k: metrics[k] for k in STRUCTURAL_KEYS}
     perf_all["StateTransferCVtoDV"] = {k: metrics[k] for k in PERFORMANCE_KEYS}
@@ -227,7 +227,7 @@ def main():
     qbr = QuantumRegister(1)
     circuit = c2qa.CVCircuit(qmr, qbr)
     circuit = cat_state_circuit(cutoff, circuit, qbr, qmr, alpha=4)
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
     metrics = characterize_circuit("Cat State", circuit, cutoff, 1, 1, state)
     struct_all["Cat State"] = {k: metrics[k] for k in STRUCTURAL_KEYS}
     perf_all["Cat State"] = {k: metrics[k] for k in PERFORMANCE_KEYS}
@@ -237,14 +237,14 @@ def main():
     qbr = QuantumRegister(1)
     circuit = c2qa.CVCircuit(qmr, qbr)
     circuit = gkp_state_circuit(cutoff, circuit, qbr, qmr)
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
     metrics = characterize_circuit("GKP State", circuit, cutoff, 1, 1, state)
     struct_all["GKP State"] = {k: metrics[k] for k in STRUCTURAL_KEYS}
     perf_all["GKP State"] = {k: metrics[k] for k in PERFORMANCE_KEYS}
 
     # QFT Circuit
     circuit = qft_circuit(16, 1.1, 2, 1, 2)
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
     metrics = characterize_circuit("QFT Circuit", circuit, 16, 5, 1, state)
     struct_all["QFT Circuit"] = {k: metrics[k] for k in STRUCTURAL_KEYS}
     perf_all["QFT Circuit"] = {k: metrics[k] for k in PERFORMANCE_KEYS}
@@ -277,7 +277,7 @@ def main():
     # Shor's Algorithm
     cutoff = 64
     circuit = shors_circuit(15, 2, 15, 2, 0.222, cutoff)
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
     metrics = characterize_circuit("Shors Circuit", circuit, cutoff, 1, 3, state)
     struct_all["Shor's Circuit"] = {k: metrics[k] for k in STRUCTURAL_KEYS}
     perf_all["Shor's Circuit"] = {k: metrics[k] for k in PERFORMANCE_KEYS}

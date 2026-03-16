@@ -115,7 +115,7 @@ def cvQAOA(params: np.ndarray, cutoff: int, depth: int,
         )
 
     # Simulate and compute expectation value
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
     x = position(cutoff)
     expval = expect(x, Qobj(state))
 
@@ -183,7 +183,7 @@ def results_final(params: np.ndarray, cutoff: int, depth: int,
         )
 
     # Simulate
-    state, _, _ = c2qa.util.simulate(circuit)
+    state, _, _, _ = c2qa.util.simulate(circuit)
 
     # Position expectation
     x = position(cutoff)
